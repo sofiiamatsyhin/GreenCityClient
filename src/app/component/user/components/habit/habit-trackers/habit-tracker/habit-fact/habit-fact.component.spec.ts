@@ -1,6 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HabitFactComponent } from './habit-fact.component';
+import {SharedModule} from '../../../../../../shared/shared.module';
 
 describe('HabitFactComponent', () => {
   let component: HabitFactComponent;
@@ -8,6 +9,7 @@ describe('HabitFactComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [ SharedModule ],
       declarations: [ HabitFactComponent ]
     })
     .compileComponents();
