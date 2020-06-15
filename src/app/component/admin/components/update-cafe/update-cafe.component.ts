@@ -1,23 +1,24 @@
 import {Component, ElementRef, EventEmitter, Inject, NgZone, OnInit, Output, ViewChild} from '@angular/core';
-import {PlaceAddDto} from "../../../../model/placeAddDto.model";
-import {LocationDto} from "../../../../model/locationDto.model";
-import {DiscountDto} from "../../../../model/discount/DiscountDto";
-import {SpecificationNameDto} from "../../../../model/specification/SpecificationNameDto";
-import {OpeningHours} from "../../../../model/openingHours.model";
-import {WeekDays} from "../../../../model/weekDays.model";
-import {BreakTimes} from "../../../../model/breakTimes.model";
-import {CategoryDto} from "../../../../model/category.model";
-import {PlaceWithUserModel} from "../../../../model/placeWithUser.model";
-import {NgForm} from "@angular/forms";
-import {NgSelectComponent} from "@ng-select/ng-select";
-import {ModalService} from "../../../core/components/propose-cafe/_modal/modal.service";
-import {PlaceService} from "../../../../service/place/place.service";
-import {CategoryService} from "../../../../service/category.service";
-import {SpecificationService} from "../../../../service/specification.service";
-import {UserService} from "../../../../service/user/user.service";
-import {MapsAPILoader, MouseEvent} from "@agm/core";
-import {PlaceUpdatedDto} from "../../models/placeUpdatedDto.model";
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
+import {PlaceAddDto} from '../../../../model/placeAddDto.model';
+import {LocationDto} from '../../../../model/locationDto.model';
+import {DiscountDto} from '../../../../model/discount/DiscountDto';
+import {SpecificationNameDto} from '../../../../model/specification/SpecificationNameDto';
+import {OpeningHours} from '../../../../model/openingHours.model';
+import {WeekDays} from '../../../../model/weekDays.model';
+import {BreakTimes} from '../../../../model/breakTimes.model';
+import {CategoryDto} from '../../../../model/category.model';
+import {PlaceWithUserModel} from '../../../../model/placeWithUser.model';
+import {NgForm} from '@angular/forms';
+import {NgSelectComponent} from '@ng-select/ng-select';
+import {ModalService} from '../../../core/components/propose-cafe/_modal/modal.service';
+import {PlaceService} from '../../../../service/place/place.service';
+import {CategoryService} from '../../../../service/category.service';
+import {SpecificationService} from '../../../../service/specification.service';
+import {UserService} from '../../../../service/user/user.service';
+import {MapsAPILoader, MouseEvent} from '@agm/core';
+import {PlaceUpdatedDto} from '../../models/placeUpdatedDto.model';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
+import { google } from "google-maps";
 
 @Component({
   selector: 'app-update-cafe',
@@ -25,6 +26,12 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material";
   styleUrls: ['./update-cafe.component.scss']
 })
 export class UpdateCafeComponent implements OnInit {
+
+  constructor(private modalService: ModalService, private placeService: PlaceService, private categoryService: CategoryService,
+              private specificationService: SpecificationService, private uService: UserService, private mapsAPILoader: MapsAPILoader,
+              private ngZone: NgZone, @Inject(MAT_DIALOG_DATA) public data: any, private dialogRef: MatDialogRef<UpdateCafeComponent>) {
+    this.submitButtonEnabled = true;
+  }
   name: any;
   nameOfSpecification: any;
   value: any;
@@ -56,11 +63,7 @@ export class UpdateCafeComponent implements OnInit {
   @ViewChild('search', {static: true})
   public searchElementRef: ElementRef;
 
-  constructor(private modalService: ModalService, private placeService: PlaceService, private categoryService: CategoryService,
-              private specificationService: SpecificationService, private uService: UserService, private mapsAPILoader: MapsAPILoader,
-              private ngZone: NgZone, @Inject(MAT_DIALOG_DATA) public data: any, private dialogRef: MatDialogRef<UpdateCafeComponent>) {
-    this.submitButtonEnabled = true;
-  }
+  weekDaysNew: WeekDays[] = [];
 
   ngOnInit() {
     this.placeService.getPlaceByID(this.data).subscribe(data => {
@@ -122,9 +125,9 @@ export class UpdateCafeComponent implements OnInit {
   }
 
   addDiscountAndSpecification(nameOfSpecification: string, value: number) {
-    let discount1 = new DiscountDto();
+    const discount1 = new DiscountDto();
     discount1.value = value;
-    let specification = new SpecificationNameDto();
+    const specification = new SpecificationNameDto();
     specification.name = nameOfSpecification;
     discount1.specification = specification;
     if (this.discountValues.length === 0) {
@@ -133,7 +136,7 @@ export class UpdateCafeComponent implements OnInit {
       let exist = false;
       for (let i = 0; i < this.discountValues.length; i++) {
         if (discount1.specification.name === this.discountValues[i].specification.name) {
-          alert("Already exists.");
+          alert('Already exists.');
           exist = true;
         }
       }
@@ -149,7 +152,7 @@ export class UpdateCafeComponent implements OnInit {
       return;
     }
 
-    let openingHours1 = new OpeningHours();
+    const openingHours1 = new OpeningHours();
     openingHours1.closeTime = openingHours.closeTime;
     openingHours1.openTime = openingHours.openTime;
     openingHours1.weekDay = openingHours.weekDay;
@@ -173,8 +176,6 @@ export class UpdateCafeComponent implements OnInit {
     this.breakTimes = new BreakTimes();
     this.isBreakTime = false;
   }
-
-  weekDaysNew: WeekDays[] = [];
 
   removeDay(openingHours1) {
     this.weekDays.forEach(val => {
